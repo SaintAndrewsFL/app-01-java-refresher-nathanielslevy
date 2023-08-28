@@ -14,12 +14,17 @@ public class GameLogic {
         System.out.println("Welcome to Flashcard Game!");
         Scanner scanner = new Scanner(System.in);
         System.out.print("Please Select Difficulty: Normal or Difficult? ");
-        this.userInput = scanner.nextLine();
-        System.out.println("You selected: " + userInput);
-        if (userInput.equals("Normal")) {
-            runNormal();
-        } else if (userInput.equals("Difficult")) {
-            runDifficult();
+        while (true) {
+            this.userInput = scanner.nextLine();
+            System.out.println("You selected: " + userInput);
+            if (userInput.equals("Normal")) {
+                runNormal();
+            } else if (userInput.equals("Difficult")) {
+                runDifficult();
+                break;
+            } else {
+                System.out.println("Please select Normal or Difficult: ");
+            }
         }
     }
 
@@ -32,43 +37,115 @@ public class GameLogic {
     }
 
     public void runNormal() {
-        while (numPoints < 26) {
-            ArrayList<String> activeWordList = new ArrayList<>(Vocab.getWordList());
-            ArrayList<String> activeDefinitionList = new ArrayList<>(Vocab.getDefinitionList());
-            ArrayList<String> incorrectDefinitionList = new ArrayList<>();
+        ArrayList<String> activeWordList = new ArrayList<>(Vocab.getWordList());
+        ArrayList<String> activeDefinitionList = new ArrayList<>(Vocab.getDefinitionList());
+        ArrayList<String> incorrectDefinitionList = new ArrayList<>();
+        ArrayList<String> incorrectWordList = new ArrayList<>();
+        int roundNumber = 1;
+        int correctAnswers = 0;
+        while (activeWordList.size() > 0) {
+
             int size = activeWordList.size();;
             int defIndex = (int) (Math.random() * size);
-
-
             // Print out randomly selected definition
             System.out.println("Question " + String.valueOf(questionNumber) + ": " + activeDefinitionList.get(defIndex));
 
             // Four random words
-            System.out.println("A: " + activeWordList.get((defIndex + 5) % size));
-            System.out.println("B: " + activeWordList.get((defIndex + 20) % size));
-            System.out.println("C: " + activeWordList.get((defIndex) % size));
-            System.out.println("D: " + activeWordList.get((defIndex + 1) % size));
+            String word = activeWordList.get(defIndex);
+            System.out.println("A: " + Vocab.getWordList().get((Vocab.getWordList().indexOf(word)+5) % 26));
+            System.out.println("B: " + Vocab.getWordList().get((Vocab.getWordList().indexOf(word)+20) % 26));
+            System.out.println("C: " + word);
+            System.out.println("D: " + Vocab.getWordList().get((Vocab.getWordList().indexOf(word)+1) % 26));
 
             Scanner scanner = new Scanner(System.in);
-            if (scanner.nextLine().equals("C")) {
+            if (scanner.nextLine().equalsIgnoreCase("C")) {
                 System.out.println("Correct!");
                 numPoints++;
                 activeWordList.remove(defIndex);
                 activeDefinitionList.remove(defIndex);
+                correctAnswers++;
+                if (correctAnswers == 26) {
+                    break;
+                }
             } else {
                 System.out.println("Incorrect!");
+                incorrectDefinitionList.add(activeDefinitionList.get(defIndex));
+                incorrectWordList.add(activeWordList.get(defIndex));
+                activeWordList.remove(defIndex);
+                activeDefinitionList.remove(defIndex);
+            }
+            if (activeDefinitionList.size() == 0) {
+                System.out.println("You've completed Round #" + String.valueOf(roundNumber) + "!");
+                System.out.println("Would you like to play another round? Yes or No?");
+                if (scanner.nextLine().equalsIgnoreCase("No")) {
+                    System.out.println("Ok dumbass");
+                    break;
+                } else {
+                    roundNumber++;
+                    activeWordList.addAll(incorrectWordList);
+                    activeDefinitionList.addAll(incorrectDefinitionList);
+                    incorrectWordList.clear();
+                    incorrectDefinitionList.clear();
+                }
+
             }
             questionNumber++;
         }
         System.out.println("Congratulations! You've completed the game!");
-        double percentage = 26.0 / (questionNumber + 1) * 100;
+        double percentage = correctAnswers * 100.0 / questionNumber;
         System.out.println("You answered " + percentage + "% of questions correctly!");
-
     }
 
     public void runDifficult() {
+        ArrayList<String> activeWordList = new ArrayList<>(Vocab.getWordList());
+        ArrayList<String> activeDefinitionList = new ArrayList<>(Vocab.getDefinitionList());
+        ArrayList<String> incorrectDefinitionList = new ArrayList<>();
+        ArrayList<String> incorrectWordList = new ArrayList<>();
+        int roundNumber = 1;
+        int correctAnswers = 0;
+        while (activeDefinitionList.size() > 0) {
+            int size = activeWordList.size();
+            int defIndex = (int) (Math.random() * size);
 
+            System.out.println("Question " + String.valueOf(questionNumber) + ": " + activeDefinitionList.get(defIndex));
+            Scanner scanner = new Scanner(System.in);
+            if (scanner.nextLine().equalsIgnoreCase(activeWordList.get(defIndex))) {
+                System.out.println("Correct!");
+                numPoints++;
+                activeWordList.remove(defIndex);
+                activeDefinitionList.remove(defIndex);
+                correctAnswers++;
+                if (correctAnswers == 26) {
+                    break;
+                }
+            } else {
+                System.out.println("Incorrect!");
+                incorrectDefinitionList.add(activeDefinitionList.get(defIndex));
+                incorrectWordList.add(activeWordList.get(defIndex));
+                activeWordList.remove(defIndex);
+                activeDefinitionList.remove(defIndex);
+            }
 
+            if (activeDefinitionList.size() == 0) {
+                System.out.println("You've completed Round #" + String.valueOf(roundNumber) + "!");
+                System.out.println("Would you like to play another round? Yes or No?");
+                if (scanner.nextLine().equalsIgnoreCase("No")) {
+                    System.out.println("Ok dumbass");
+                    break;
+                } else {
+                    roundNumber++;
+                    activeWordList.addAll(incorrectWordList);
+                    activeDefinitionList.addAll(incorrectDefinitionList);
+                    incorrectWordList.clear();
+                    incorrectDefinitionList.clear();
+                }
+
+            }
+            questionNumber++;
+        }
+        System.out.println("Congratulations! You've completed the game!");
+        double percentage = correctAnswers * 100.0 / questionNumber;
+        System.out.println("You answered " + percentage + "% of questions correctly!");
     }
 
     public void generateVocabList() {
